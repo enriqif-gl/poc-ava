@@ -1,357 +1,725 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AVA – Solicitud de venta móvil</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>AVA – Portabilidad Móvil</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --red:     #E30613;
       --red-dk:  #B80010;
-      --gray:    #F5F5F5;
-      --border:  #E0E0E0;
-      --text:    #212121;
+      --gray-bg: #F4F4F4;
+      --border:  #DDDDDD;
+      --text:    #1A1A1A;
       --muted:   #757575;
       --white:   #FFFFFF;
-      --radius:  10px;
+      --green:   #2E7D32;
+      --green-bg:#E8F5E9;
+      --blue:    #1565C0;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--gray);
+      font-family: 'Roboto', sans-serif;
+      background: var(--gray-bg);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
-    /* ── Top bar ── */
+    /* ── Topbar ── */
     .topbar {
       background: var(--red);
       color: var(--white);
       display: flex;
       align-items: center;
-      padding: 14px 16px;
-      gap: 12px;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 52px;
+      flex-shrink: 0;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .topbar .back-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--white); padding: 4px; display: flex;
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-close {
+      background: none; border: none; color: var(--white);
+      cursor: pointer; padding: 4px; display: flex;
+      align-items: center; font-size: 22px; line-height: 1;
     }
-    .topbar h1 { font-size: 17px; font-weight: 600; letter-spacing: .2px; }
+    .topbar-back {
+      background: none; border: none; color: var(--white);
+      cursor: pointer; padding: 4px; display: flex;
+      align-items: center;
+    }
+    .topbar-title { font-size: 16px; font-weight: 500; }
+    .topbar-logo {
+      font-size: 20px; font-weight: 700; color: var(--white);
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; flex-direction: column; flex: 1; min-height: calc(100vh - 52px); }
+    .screen.active { display: flex; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
 
     /* ── Card ── */
     .card {
       background: var(--white);
-      border-radius: var(--radius);
       margin: 20px 16px;
-      padding: 24px 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.07);
-    }
-
-    /* ── Address strip ── */
-    .address-strip {
-      text-align: center;
-      margin-bottom: 24px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .address-strip .address { font-size: 15px; font-weight: 600; color: var(--text); }
-    .address-strip .sub     { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    /* ── Section title ── */
-    .section-title {
-      font-size: 15px; font-weight: 700; color: var(--text);
-      margin-bottom: 6px;
-    }
-    .section-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-
-    /* ── Field ── */
-    .field { margin-bottom: 18px; }
-    .field label {
-      display: block; font-size: 12px; color: var(--muted);
-      margin-bottom: 4px; font-weight: 500;
-    }
-    .field label span { color: var(--red); }
-    .field input, .field select {
-      width: 100%; border: none; border-bottom: 1.5px solid var(--border);
-      padding: 8px 0; font-size: 14px; font-family: inherit;
-      color: var(--text); background: transparent; outline: none;
-      transition: border-color .2s;
-    }
-    .field input:focus, .field select:focus { border-color: var(--red); }
-    .field select { cursor: pointer; }
-
-    /* ── Visit ID badge ── */
-    .visit-id-badge {
-      display: none;
-      background: #FFF3F3;
-      border: 1px solid #FFCDD2;
       border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: var(--red-dk);
-      margin-bottom: 20px;
-      align-items: center;
-      gap: 8px;
+      padding: 28px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.10);
+      flex: 1;
     }
-    .visit-id-badge.visible { display: flex; }
-    .visit-id-badge strong { font-weight: 700; }
 
-    /* ── Radio group ── */
-    .radio-group { display: flex; gap: 24px; margin-top: 4px; }
-    .radio-group label {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 14px; color: var(--text); cursor: pointer;
-      margin-bottom: 0;
+    /* ── Generic centered layout ── */
+    .centered-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      text-align: center;
     }
-    .radio-group input[type=radio] { accent-color: var(--red); width: 18px; height: 18px; }
+
+    /* ── DNI placeholder ── */
+    .dni-placeholder {
+      width: 100%;
+      aspect-ratio: 1.6 / 1;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: #FAFAFA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .dni-placeholder-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted); }
+    .dni-placeholder-inner span { font-size: 13px; }
+
+    /* ── Photo taken badge ── */
+    .photo-badge {
+      display: none;
+      background: var(--green-bg); color: var(--green);
+      border-radius: 6px; padding: 8px 12px;
+      font-size: 13px; font-weight: 500;
+      align-items: center; gap: 6px;
+      margin-bottom: 16px;
+    }
+    .photo-badge.visible { display: flex; }
+
+    /* ── Text helpers ── */
+    .screen-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 28px; text-align: center; }
+    .instructions { text-align: center; font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+    .instructions strong { color: var(--red); font-weight: 700; }
+    .instructions-tip { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+    /* ── Success circle ── */
+    .success-circle {
+      width: 90px; height: 90px;
+      background: var(--green-bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .success-circle::before {
+      content: '';
+      position: absolute;
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: rgba(46,125,50,.12);
+    }
+    .gray-circle {
+      width: 48px; height: 48px;
+      background: #9E9E9E;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px; left: -10px;
+      z-index: 0;
+    }
+    .success-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .success-sub   { font-size: 13px; color: var(--blue); margin-bottom: 32px; line-height: 1.5; }
+
+    /* ── Signature pad ── */
+    .signature-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .sig-title { font-size: 17px; font-weight: 700; text-align: center; color: var(--text); margin-bottom: 20px; }
+    .sig-canvas-wrapper {
+      background: var(--white);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 0;
+      position: relative;
+      flex-shrink: 0;
+    }
+    #sigCanvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .sig-retry-bar {
+      border-top: 2px solid var(--blue);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .sig-retry-bar:hover { color: var(--blue); }
+
+    /* ── Checkbox T&C ── */
+    .tc-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 16px 0 20px;
+      padding: 0 4px;
+    }
+    .tc-row input[type=checkbox] { accent-color: var(--blue); width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+    .tc-row label { font-size: 12px; color: var(--muted); line-height: 1.5; cursor: pointer; }
+    .tc-row label a { color: var(--blue); text-decoration: none; }
+
+    /* ── OTP inputs ── */
+    .otp-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .otp-input {
+      width: 48px; height: 56px;
+      border: none;
+      border-bottom: 2px solid var(--border);
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      background: transparent;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .otp-input:focus { border-color: var(--red); }
+
+    /* ── SMS icon illustration ── */
+    .sms-illustration {
+      width: 100px; height: 100px;
+      margin: 0 auto 20px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sms-illustration svg { width: 100%; height: 100%; }
+
+    /* ── Resend link ── */
+    .resend-link {
+      display: flex; align-items: center; gap: 6px;
+      justify-content: center;
+      font-size: 13px; color: var(--blue);
+      cursor: pointer; margin-bottom: 20px;
+      text-decoration: underline;
+    }
 
     /* ── Buttons ── */
     .btn {
       display: block; width: 100%;
-      padding: 14px; border: none; border-radius: var(--radius);
-      font-family: inherit; font-size: 14px; font-weight: 600;
-      letter-spacing: .4px; cursor: pointer; transition: background .2s, transform .08s;
+      padding: 14px; border: none;
+      border-radius: 25px;
+      font-family: inherit; font-size: 14px; font-weight: 700;
+      letter-spacing: .3px; cursor: pointer;
+      transition: background .15s, transform .08s;
     }
     .btn:active { transform: scale(.98); }
     .btn-primary { background: var(--red); color: var(--white); }
     .btn-primary:hover { background: var(--red-dk); }
-    .btn-outline {
-      background: var(--white); color: var(--red);
-      border: 1.5px solid var(--red); margin-top: 10px;
-    }
-    .btn-outline:hover { background: #FFF3F3; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-primary:disabled { background: #BDBDBD; cursor: not-allowed; }
 
-    /* ── Steps indicator ── */
-    .steps {
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px; margin-bottom: 24px;
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55); z-index: 50;
+      align-items: center; justify-content: center;
     }
-    .step {
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      background: var(--border); color: var(--muted);
-      transition: background .3s, color .3s;
+    .modal-overlay.visible { display: flex; }
+    .modal {
+      background: var(--white);
+      border-radius: 12px;
+      width: 85%;
+      max-width: 320px;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
     }
-    .step.active { background: var(--red); color: var(--white); }
-    .step.done   { background: #4CAF50; color: var(--white); }
-    .step-line   { flex: 1; max-width: 32px; height: 2px; background: var(--border); }
-    .step-line.done { background: #4CAF50; }
+    .modal-x {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; font-size: 18px;
+      color: var(--muted); cursor: pointer; line-height: 1;
+    }
+    .modal-gray-dot {
+      width: 40px; height: 40px;
+      background: #9E9E9E;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+    }
+    .modal h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .modal p  { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+    .modal .btn { border-radius: 25px; margin-bottom: 8px; }
+    .modal-link { font-size: 13px; color: var(--blue); cursor: pointer; text-decoration: underline; }
 
-    /* ── Screens ── */
-    .screen { display: none; }
-    .screen.active { display: block; animation: fadeIn .25s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    /* ── Success icon ── */
-    .success-icon {
-      width: 64px; height: 64px; background: #E8F5E9; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
+    /* ── Snackbar ── */
+    .snackbar {
+      position: fixed;
+      bottom: -80px;
+      left: 12px; right: 12px;
+      background: #2E7D32;
+      color: var(--white);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      transition: bottom .4s cubic-bezier(.4,0,.2,1);
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,.2);
     }
-    .success-icon svg { color: #4CAF50; }
-    .success-text { text-align: center; margin-bottom: 24px; }
-    .success-text h2 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .success-text p  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .snackbar.visible { bottom: 20px; }
+    .snackbar-close { background: none; border: none; color: var(--white); cursor: pointer; font-size: 16px; }
+
+    /* ── Footer legal ── */
+    .footer-legal {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 10px 16px;
+    }
+    .footer-legal a { color: var(--muted); }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <button class="back-btn" onclick="history.back()">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </button>
-    <h1>Solicitud de venta móvil</h1>
-  </div>
-
-  <!-- ─────────── PANTALLA 1: Datos del contacto ─────────── -->
-  <div id="screen1" class="screen active">
-    <div class="card">
-      <div class="address-strip">
-        <div class="address">Gibraltar 102 - Torre 1 - 11</div>
-        <div class="sub">Datos del contacto</div>
-      </div>
-
-      <div id="visitBadge" class="visit-id-badge">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        ID de visita obtenido: <strong id="visitIdValue">—</strong>
-      </div>
-
-      <p class="section-title">Información del cliente</p>
-      <p class="section-sub">Complete los datos del contacto</p>
-
-      <div class="field">
-        <label>Nombre <span>*</span></label>
-        <input type="text" id="nombre" placeholder="Ingrese el nombre" />
-      </div>
-      <div class="field">
-        <label>Apellido <span>*</span></label>
-        <input type="text" id="apellido" placeholder="Ingrese el apellido" />
-      </div>
-      <div class="field">
-        <label>Teléfono <span>*</span></label>
-        <input type="tel" id="telefono" placeholder="Ej: 11 1234-5678" />
-      </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="ejemplo@correo.com" />
-      </div>
-
-      <button class="btn btn-outline" id="btnGetVisitId" onclick="fetchVisitId()">
-        Obtener ID de visita
-      </button>
-      <button class="btn btn-primary" style="margin-top:14px" onclick="goToScreen2()">
-        Siguiente
-      </button>
+  <!-- ══ TOP BAR ══ -->
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="topbar-close" id="topbarClose" onclick="handleClose()" title="Cerrar">&#x2715;</button>
+      <span class="topbar-title" id="topbarTitle">AVA - Portabilidad Móvil</span>
     </div>
   </div>
 
-  <!-- ─────────── PANTALLA 2: Producto ─────────── -->
-  <div id="screen2" class="screen">
+  <!-- ════════════════════════════════════════
+       S1 – Foto FRENTE del documento
+  ════════════════════════════════════════ -->
+  <div id="s1" class="screen active">
     <div class="card">
-      <div class="address-strip">
-        <div class="address">Gibraltar 102 - Torre 1 - 11</div>
-        <div class="sub">Selección de producto</div>
-      </div>
+      <p class="screen-title">Validá tu identidad</p>
 
-      <div class="steps">
-        <div class="step done">✓</div>
-        <div class="step-line done"></div>
-        <div class="step active">2</div>
-        <div class="step-line"></div>
-        <div class="step">3</div>
-      </div>
-
-      <p class="section-title">Plan solicitado</p>
-      <p class="section-sub">Seleccione el producto de interés</p>
-
-      <div class="field">
-        <label>Tipo de servicio <span>*</span></label>
-        <select id="tipoServicio">
-          <option value="">Seleccione...</option>
-          <option>Móvil prepago</option>
-          <option>Móvil pospago</option>
-          <option>Hogar + Móvil</option>
-          <option>Internet hogar</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Plan <span>*</span></label>
-        <select id="plan">
-          <option value="">Seleccione...</option>
-          <option>Plan básico – $2.500</option>
-          <option>Plan avanzado – $4.200</option>
-          <option>Plan premium – $6.800</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>¿Ya es cliente Claro?</label>
-        <div class="radio-group">
-          <label><input type="radio" name="esCliente" value="si" /> Sí</label>
-          <label><input type="radio" name="esCliente" value="no" checked /> No</label>
+      <div class="dni-placeholder">
+        <div class="dni-placeholder-inner">
+          <svg width="56" height="40" viewBox="0 0 56 40" fill="none">
+            <rect x="1" y="1" width="54" height="38" rx="4" stroke="#BDBDBD" stroke-width="2"/>
+            <circle cx="14" cy="17" r="7" stroke="#BDBDBD" stroke-width="1.5"/>
+            <rect x="25" y="12" width="20" height="3" rx="1.5" fill="#BDBDBD"/>
+            <rect x="25" y="18" width="14" height="2" rx="1" fill="#BDBDBD"/>
+            <rect x="4" y="30" width="48" height="2" rx="1" fill="#E0E0E0"/>
+            <rect x="4" y="34" width="38" height="2" rx="1" fill="#E0E0E0"/>
+          </svg>
+          <span>Vista previa del frente</span>
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="goToScreen3()">Siguiente</button>
-      <button class="btn btn-outline" onclick="goTo('screen1')">Volver</button>
+      <div class="photo-badge" id="b1">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2E7D32" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Foto del frente tomada correctamente
+      </div>
+
+      <p class="instructions">Sacá foto del <strong>FRENTE</strong><br/>del documento</p>
+      <p class="instructions-tip">Te recomendamos que apoyes el<br/>documento en un fondo oscuro<br/>y no uses flash.</p>
+
+      <button class="btn btn-primary" onclick="takePhoto('b1','s2')">Continuar</button>
+    </div>
+    <div class="footer-legal">Todos los derechos reservados. Claro 2026 &nbsp;|&nbsp; <a href="#">Legal y Regulatorio</a></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       S2 – Foto DORSO del documento
+  ════════════════════════════════════════ -->
+  <div id="s2" class="screen">
+    <div class="card">
+      <p class="screen-title">Validá tu identidad</p>
+
+      <div class="dni-placeholder">
+        <div style="width:100%;height:100%;background:linear-gradient(135deg,#e0e0e0,#bdbdbd);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <svg width="56" height="40" viewBox="0 0 56 40" fill="none">
+            <rect x="1" y="1" width="54" height="38" rx="4" stroke="#9E9E9E" stroke-width="2"/>
+            <circle cx="14" cy="17" r="7" stroke="#9E9E9E" stroke-width="1.5" fill="#BDBDBD"/>
+            <rect x="25" y="12" width="20" height="3" rx="1.5" fill="#9E9E9E"/>
+            <rect x="25" y="18" width="14" height="2" rx="1" fill="#9E9E9E"/>
+            <rect x="4" y="30" width="48" height="2" rx="1" fill="#9E9E9E"/>
+            <rect x="4" y="34" width="38" height="2" rx="1" fill="#9E9E9E"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="photo-badge" id="b2">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#2E7D32" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Foto del dorso tomada correctamente
+      </div>
+
+      <p class="instructions">Sacá foto del <strong>DORSO</strong><br/>del documento</p>
+      <p class="instructions-tip">Te recomendamos que apoyes el<br/>documento en un fondo oscuro<br/>y no uses flash.</p>
+
+      <button class="btn btn-primary" onclick="takePhoto('b2','s3')">Continuar</button>
+    </div>
+    <div class="footer-legal">Todos los derechos reservados. Claro 2026 &nbsp;|&nbsp; <a href="#">Legal y Regulatorio</a></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       S3 – Validación de identidad exitosa
+  ════════════════════════════════════════ -->
+  <div id="s3" class="screen">
+    <div class="centered-content">
+      <div style="position:relative;margin-bottom:24px">
+        <div class="gray-circle"></div>
+        <div class="success-circle" style="position:relative;z-index:1">
+          <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#2E7D32" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      </div>
+      <p class="success-title">Validación de<br/>identidad exitosa</p>
+      <p class="success-sub">Continuá la gestión en Stealth / Nexo Stealth</p>
+      <button class="btn btn-primary" style="max-width:320px" onclick="goToNexo()">Continuar</button>
+    </div>
+    <div class="footer-legal">Todos los derechos reservados. Claro 2026 &nbsp;|&nbsp; <a href="#">Legal y Regulatorio</a></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       S4 – Retorno de NEXO (pantalla intermedia)
+  ════════════════════════════════════════ -->
+  <div id="s4" class="screen">
+    <div class="centered-content">
+      <div style="position:relative;margin-bottom:24px">
+        <div class="gray-circle"></div>
+        <div class="success-circle" style="position:relative;z-index:1;background:#E3F2FD;">
+          <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#1565C0" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="success-title">¡SDS generada con éxito!</p>
+      <p class="success-sub" style="color:var(--muted)">
+        La solicitud fue procesada correctamente en ASM.<br/>
+        A continuación, el cliente debe firmar los documentos.
+      </p>
+      <button class="btn btn-primary" style="max-width:320px" onclick="goTo('s5')">Continuar</button>
+    </div>
+    <div class="footer-legal">Todos los derechos reservados. Claro 2026 &nbsp;|&nbsp; <a href="#">Legal y Regulatorio</a></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       S5 – Firma del cliente
+  ════════════════════════════════════════ -->
+  <div id="s5" class="screen">
+    <div class="signature-section">
+      <p class="sig-title">Firma del cliente</p>
+
+      <div class="sig-canvas-wrapper">
+        <canvas id="sigCanvas"></canvas>
+        <div class="sig-retry-bar" onclick="clearSignature()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reintentar
+        </div>
+      </div>
+
+      <div class="tc-row">
+        <input type="checkbox" id="tcCheck" onchange="updateSigBtn()"/>
+        <label for="tcCheck">
+          He leído y acepto los <a href="#">Términos y Condiciones</a>, la <a href="#">Solicitud de Servicio</a>, la <a href="#">Aceptación de Condiciones Particulares</a>, las <a href="#">Políticas Aplicables</a>.
+        </label>
+      </div>
+
+      <button class="btn btn-primary" id="btnSigContinue" disabled onclick="showAttachModal()">
+        Continuar
+      </button>
     </div>
   </div>
 
-  <!-- ─────────── PANTALLA 3: Confirmación ─────────── -->
-  <div id="screen3" class="screen">
-    <div class="card">
-      <div class="address-strip">
-        <div class="address">Gibraltar 102 - Torre 1 - 11</div>
-        <div class="sub">Confirmar solicitud</div>
-      </div>
-
-      <div class="steps">
-        <div class="step done">✓</div>
-        <div class="step-line done"></div>
-        <div class="step done">✓</div>
-        <div class="step-line done"></div>
-        <div class="step active">3</div>
-      </div>
-
-      <div class="success-icon">
-        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#4CAF50" stroke-width="2.2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  <!-- ════════════════════════════════════════
+       S6 – Código de Portabilidad
+  ════════════════════════════════════════ -->
+  <div id="s6" class="screen">
+    <div class="centered-content">
+      <!-- SMS illustration -->
+      <div class="sms-illustration">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- fondo gris redondeado -->
+          <ellipse cx="50" cy="55" rx="38" ry="30" fill="#F0F0F0"/>
+          <!-- envelope / SMS icon -->
+          <rect x="18" y="28" width="50" height="36" rx="5" fill="#E0E0E0" stroke="#BDBDBD" stroke-width="1.5"/>
+          <line x1="18" y1="34" x2="43" y2="50" stroke="#BDBDBD" stroke-width="1.5"/>
+          <line x1="68" y1="34" x2="43" y2="50" stroke="#BDBDBD" stroke-width="1.5"/>
+          <!-- dots -->
+          <circle cx="31" cy="49" r="3" fill="#9E9E9E"/>
+          <circle cx="43" cy="49" r="3" fill="#9E9E9E"/>
+          <circle cx="55" cy="49" r="3" fill="#9E9E9E"/>
+          <!-- green check badge -->
+          <circle cx="68" cy="32" r="12" fill="#4CAF50"/>
+          <path d="M63 32l3.5 3.5L73 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- red semicircle accent -->
+          <path d="M22 30 Q50 10 78 30" stroke="#E30613" stroke-width="3" fill="none"/>
         </svg>
       </div>
-      <div class="success-text">
-        <h2>¡Todo listo en AVA!</h2>
-        <p>La solicitud fue cargada correctamente.<br/>Presione <em>Siguiente</em> para continuar con la validación en NEXO.</p>
+
+      <p class="success-title">Código de Portabilidad</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.5;max-width:260px">
+        Pedile al cliente el código que va a recibir por SMS en los próximos minutos.
+      </p>
+
+      <!-- OTP inputs -->
+      <div class="otp-row">
+        <input class="otp-input" id="otp1" type="tel" maxlength="1" oninput="otpNext(this,'otp2')"/>
+        <input class="otp-input" id="otp2" type="tel" maxlength="1" oninput="otpNext(this,'otp3')"/>
+        <input class="otp-input" id="otp3" type="tel" maxlength="1" oninput="otpNext(this,'otp4')"/>
+        <input class="otp-input" id="otp4" type="tel" maxlength="1" oninput="otpNext(this,null)"/>
       </div>
 
-      <button class="btn btn-primary" onclick="finishAva()">Siguiente</button>
-      <button class="btn btn-outline" onclick="goTo('screen2')">Volver</button>
+      <div class="resend-link" onclick="resendCode()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Reenviar código
+      </div>
+
+      <button class="btn btn-primary" style="max-width:320px" onclick="showSaveCodeModal()">Continuar</button>
     </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       MODALS
+  ════════════════════════════════════════ -->
+
+  <!-- Modal: ¿Adjuntar archivos? -->
+  <div class="modal-overlay" id="modalAttach">
+    <div class="modal">
+      <button class="modal-x" onclick="closeModal('modalAttach')">✕</button>
+      <div class="modal-gray-dot"></div>
+      <h3>¿Necesitás adjuntar archivos?</h3>
+      <button class="btn btn-primary" onclick="closeModal('modalAttach'); goTo('s6')">Adjuntar</button>
+      <div class="modal-link" onclick="closeModal('modalAttach'); goTo('s6')">Continuar sin adjuntar</div>
+    </div>
+  </div>
+
+  <!-- Modal: Guardar código -->
+  <div class="modal-overlay" id="modalSaveCode">
+    <div class="modal">
+      <button class="modal-x" onclick="closeModal('modalSaveCode')">✕</button>
+      <div class="modal-gray-dot"></div>
+      <h3>Guardar código</h3>
+      <p>¿Estás seguro que ingresaste los datos correctamente?</p>
+      <button class="btn btn-primary" onclick="finalizeFlow()">Aceptar</button>
+      <div class="modal-link" onclick="closeModal('modalSaveCode')">Cancelar</div>
+    </div>
+  </div>
+
+  <!-- Snackbar -->
+  <div class="snackbar" id="snackbar">
+    <span>✔ El trámite ha sido notificado por mail al cliente.</span>
+    <button class="snackbar-close" onclick="hideSnackbar()">✕</button>
   </div>
 
   <script>
+    /* ── Navigation ── */
     function goTo(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       window.scrollTo(0, 0);
+      updateTopbar(id);
     }
 
-    function goToScreen2() {
-      const nombre = document.getElementById('nombre').value.trim();
-      const apellido = document.getElementById('apellido').value.trim();
-      const telefono = document.getElementById('telefono').value.trim();
-      if (!nombre || !apellido || !telefono) {
-        alert('Por favor complete los campos obligatorios.');
-        return;
+    function updateTopbar(screenId) {
+      const closeBtn = document.getElementById('topbarClose');
+      const title    = document.getElementById('topbarTitle');
+
+      if (screenId === 's5') {
+        // Firma: topbar muestra logo Claro + back arrow como las capturas
+        closeBtn.innerHTML = `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>`;
+        closeBtn.onclick = () => goTo('s4');
+        title.style.display = 'none';
+        // Muestra logo
+        document.getElementById('topbarLogo').style.display = '';
+      } else if (['s6'].includes(screenId)) {
+        closeBtn.innerHTML = `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>`;
+        closeBtn.onclick = () => goTo('s5');
+        title.style.display = 'none';
+        document.getElementById('topbarLogo').style.display = '';
+      } else {
+        // Pantallas AVA normales: X + título
+        closeBtn.innerHTML = '&#x2715;';
+        closeBtn.onclick = handleClose;
+        title.style.display = '';
+        document.getElementById('topbarLogo').style.display = 'none';
       }
-      goTo('screen2');
     }
 
-    function goToScreen3() {
-      const tipo = document.getElementById('tipoServicio').value;
-      const plan = document.getElementById('plan').value;
-      if (!tipo || !plan) {
-        alert('Por favor seleccione tipo de servicio y plan.');
-        return;
-      }
-      goTo('screen3');
+    /* ── Simulate photo capture ── */
+    function takePhoto(badgeId, nextScreen) {
+      document.getElementById(badgeId).classList.add('visible');
+      setTimeout(() => goTo(nextScreen), 500);
     }
 
-    function fetchVisitId() {
-      let visitId = '';
-      try {
-        // Llama al método nativo Android
-        visitId = Android.getVisitId();
-      } catch (e) {
-        // Fallback para pruebas fuera de la app
-        visitId = 'DEMO-' + Math.floor(Math.random() * 9000 + 1000);
-      }
-      const badge = document.getElementById('visitBadge');
-      document.getElementById('visitIdValue').textContent = visitId || '(sin ID)';
-      badge.classList.add('visible');
+    /* ── Go to NEXO ── */
+    function goToNexo() {
+      try { Android.onAvaCompleted(); }
+      catch(e) { window.location.href = 'nexo.html'; }
     }
 
-    function finishAva() {
-      // Navega a NEXO — la URL real la controla el WebViewManager de Android
-      try {
-        Android.onAvaCompleted();
-      } catch (e) {
-        // Fallback: intenta cargar nexo.html desde el mismo origen
-        window.location.href = 'nexo.html';
-      }
+    /* ── Called by Android after NEXO completes ── */
+    function onNexoCompleted() {
+      goTo('s4');
     }
+
+    /* ── Signature pad ── */
+    var drawing = false;
+    var hasSig  = false;
+
+    function initCanvas() {
+      var canvas = document.getElementById('sigCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+
+      // Ajusta resolución al DPR
+      var dpr = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
+      canvas.width  = rect.width  * dpr;
+      canvas.height = 200         * dpr;
+      ctx.scale(dpr, dpr);
+      ctx.strokeStyle = '#1A1A1A';
+      ctx.lineWidth   = 2.5;
+      ctx.lineCap     = 'round';
+
+      function pos(e) {
+        var r = canvas.getBoundingClientRect();
+        if (e.touches) {
+          return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+        }
+        return { x: e.clientX - r.left, y: e.clientY - r.top };
+      }
+
+      canvas.addEventListener('mousedown',  e => { drawing = true; ctx.beginPath(); var p = pos(e); ctx.moveTo(p.x, p.y); });
+      canvas.addEventListener('mousemove',  e => { if (!drawing) return; var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; updateSigBtn(); });
+      canvas.addEventListener('mouseup',    () => drawing = false);
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); var p = pos(e); ctx.moveTo(p.x, p.y); }, {passive:false});
+      canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; updateSigBtn(); }, {passive:false});
+      canvas.addEventListener('touchend',   () => drawing = false);
+    }
+
+    function clearSignature() {
+      var canvas = document.getElementById('sigCanvas');
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasSig = false;
+      updateSigBtn();
+    }
+
+    function updateSigBtn() {
+      var checked = document.getElementById('tcCheck').checked;
+      document.getElementById('btnSigContinue').disabled = !(hasSig && checked);
+    }
+
+    // Init canvas when s5 becomes active
+    var canvasReady = false;
+    var origGoTo = goTo;
+
+    /* ── Modals ── */
+    function showAttachModal() {
+      document.getElementById('modalAttach').classList.add('visible');
+    }
+    function showSaveCodeModal() {
+      var filled = ['otp1','otp2','otp3','otp4'].every(id => document.getElementById(id).value.trim() !== '');
+      if (!filled) { alert('Por favor ingresá el código completo de 4 dígitos.'); return; }
+      document.getElementById('modalSaveCode').classList.add('visible');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('visible');
+    }
+
+    /* ── OTP navigation ── */
+    function otpNext(input, nextId) {
+      input.value = input.value.replace(/\D/g, '');
+      if (input.value && nextId) document.getElementById(nextId).focus();
+    }
+    function resendCode() {
+      ['otp1','otp2','otp3','otp4'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('otp1').focus();
+    }
+
+    /* ── Finalize ── */
+    function finalizeFlow() {
+      closeModal('modalSaveCode');
+      showSnackbar();
+      // Después del snackbar → llama a onProcessCompleted para ir a Observaciones nativas
+      setTimeout(() => {
+        try { Android.onProcessCompleted(); }
+        catch(e) { alert('onProcessCompleted() ejecutado (modo demo)'); }
+      }, 2000);
+    }
+
+    /* ── Snackbar ── */
+    function showSnackbar() {
+      var sb = document.getElementById('snackbar');
+      sb.classList.add('visible');
+    }
+    function hideSnackbar() {
+      document.getElementById('snackbar').classList.remove('visible');
+    }
+
+    /* ── Close flow ── */
+    function handleClose() {
+      try { Android.onFlowCancelled(); }
+      catch(e) { history.back(); }
+    }
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', function() {
+      // Agrega logo al topbar
+      var logo = document.createElement('span');
+      logo.id = 'topbarLogo';
+      logo.className = 'topbar-logo';
+      logo.textContent = 'Claro⁻';
+      logo.style.display = 'none';
+      document.getElementById('topbar').querySelector('.topbar-left').appendChild(logo);
+
+      // Observa cambios de pantalla para inicializar canvas
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          if (m.target.id === 's5' && m.target.classList.contains('active') && !canvasReady) {
+            canvasReady = true;
+            setTimeout(initCanvas, 50);
+          }
+        });
+      });
+      document.querySelectorAll('.screen').forEach(s => {
+        observer.observe(s, { attributes: true, attributeFilter: ['class'] });
+      });
+    });
   </script>
 </body>
 </html>
