@@ -673,13 +673,11 @@
 
     /* ── Finalize ── */
     function finalizeFlow() {
-      closeModal('modalSaveCode');
-      showSnackbar();
-      // Después del snackbar → llama a onProcessCompleted para ir a Observaciones nativas
-      setTimeout(() => {
-        try { Android.onProcessCompleted(); }
-        catch(e) { alert('onProcessCompleted() ejecutado (modo demo)'); }
-      }, 2000);
+        closeModal('modalSaveCode');
+        showSnackbar();
+        setTimeout(function() {
+            Android.onProcessCompleted();
+        }, 500);
     }
 
     /* ── Snackbar ── */
