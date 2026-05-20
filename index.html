@@ -717,6 +717,12 @@
       document.querySelectorAll('.screen').forEach(s => {
         observer.observe(s, { attributes: true, attributeFilter: ['class'] });
       });
+
+      // Si viene con ?step=sign, arranca en la pantalla de firma
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('step') === 'sign') {
+          goTo('s5');
+      }
     });
   </script>
 </body>
